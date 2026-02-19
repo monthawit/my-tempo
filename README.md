@@ -56,4 +56,34 @@ helm install my-opentelemetry-collector open-telemetry/opentelemetry-collector \
 helm upgrade --install my-opentelemetry-collector open-telemetry/opentelemetry-collector -f otel-collector-values.yaml -n  opentelemetry
 ```
 
+## Deployment ENV
 
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-db-app
+  namespace: otel-demo
+spec:
+  .....  
+    spec:
+      containers:
+      - name: app
+        env:
+        - name: OTEL_SERVICE_NAME
+          value: python-db-app-01
+
+## for grafana
+        - name: GF_TRACING_OPENTELEMETRY_OTLP_ADDRESS
+          value: "https://tempo-gateway.traces.olsxops.com/v1/traces"
+        - name: GF_TRACING_OPENTELEMETRY_OTLP_PROTOCOL
+          value: "http" # หรือ grpc ขึ้นอยู่กับ gateway คุณ
+        - name: GF_TRACING_OPENTELEMETRY_OTLP_HEADERS
+          value: "X-Scope-OrgID=otel-demo,Authorization=Basic xxxxxx=="           
+        - name: GF_TRACING_OPENTELEMETRY_OTLP_SAMPLING_FRACTION
+          value: "1.0"            
+        - name: OTEL_SERVICE_NAME
+          value: "grafana-web"
+        - name: GF_TRACING_OPENTELEMETRY_OTLP_SERVICE_NAME
+          value: "grafana-web"
+```
