@@ -22,3 +22,7 @@ spec:
         value: http/protobuf
       - name: OTEL_LOG_LEVEL
         value: info
+      - name: OTEL_EXPORTER_OTLP_INSECURE
+        value: "true"
+      - name: OTEL_EXPORTER_OTLP_TIMEOUT
+        value: "30000"        
