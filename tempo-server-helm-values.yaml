@@ -1,0 +1,166 @@
+tempo:
+  multitenancyEnabled: true
+            
+stackType: distributed
+
+traces:
+  otlp:
+    grpc:
+      enabled: true
+    http:
+      enabled: true
+  zipkin:
+    enabled: false
+  jaeger:
+    thriftHttp:
+      enabled: false
+  opencensus:
+    enabled: false
+
+# อย่าลืมระบุ S3/MinIO สำหรับเก็บข้อมูลระยะยาว (Long-term Storage)
+storage:
+  trace:
+    backend: s3
+    s3:
+      bucket: tempo
+      endpoint: ceph-object.s3.najajubjub.com
+      access_key: "xxxxxxxxxxxxxxxxx"
+      secret_key: "xxxxxxxxxxxxxx"
+      insecure: false #true is default
+
+ingester:
+  replicas: 3
+  persistence:
+    enabled: true
+    size: 500Gi
+    storageClass: "ceph-block" # ตรวจสอบชื่อให้ตรงกับ kubectl get sc
+  resources:
+    requests:
+      cpu: 500m
+      memory: 500Mi
+    limits:
+      cpu: 1500m
+      memory: 4Gi        
+        
+#ingester:
+#  replicas: 3
+#  resources:
+#    requests:
+#      cpu: 500m
+#      memory: 500Gi
+#    limits:
+#      cpu: 1500m
+#      memory: 4Gi
+#  # การกำหนด Storage สำหรับ WAL (Write Ahead Log)
+#  persistence:
+#    enabled: true
+#    size: 500Gi
+#    storageClass: "ceph-block" # ระบุชื่อ StorageClass ของ Rook Ceph ที่นี่
+#    accessModes:
+#      - ReadWriteOnce
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        http:
+        grpc:
+  replicas: 2
+  config:
+    log_received_spans:
+      enabled: true  # ต้องระบุเป็น enabled ภายใต้ log_received_spans
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1500m
+      memory: 1512Mi
+
+# ส่วนประกอบอื่นๆ (คงเดิม)
+#distributor:
+#  replicas: 3
+#  resources:
+#    requests:
+#      cpu: 200m
+#      memory: 256Mi
+#    limits:
+#      cpu: 1500m
+#      memory: 2Gi
+#  config:
+#    log_received_spans: true        
+
+querier:
+  replicas: 3
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1500m
+      memory: 2Gi
+
+queryFrontend:
+  replicas: 3
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1500m
+      memory: 2Gi
+
+compactor:
+  config:
+    compaction:
+      block_retention: 48h
+      compacted_block_retention: 1h
+      compaction_window: 1h
+      max_block_bytes: 1073741824 # 1GB
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+#compactor:
+#  replicas: 2  
+#  resources:
+#    requests:
+#      cpu: 200m
+#      memory: 512Mi
+#    limits:
+#      #cpu: 500m
+#      memory: 2Gi
+#  config:        
+#    compaction:
+#      block_retention: 24h # เก็บ Trace ไว้ 48 ชั่วโมง (ปรับตามต้องการ)
+
+memcached:
+  replicas: 3
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  # 3. ปรับค่า Memcached บรรทัดคำสั่ง (เช่น ขนาด Cache ต่อตัว)      
+  extraArgs:
+    - -m 1024       # กำหนดขนาด Memory ที่ใช้จริงต่อ Pod (หน่วย MB)
+    - -I 1m         # ขนาดสูงสุดของไอเทมแต่ละชิ้น (default 1m)
+    - -v            # สำหรับดู log verbose (ปิดได้ถ้าใช้งานจริง)        
+
+# Nginx Gateway (ตัวประสานงาน)
+gateway:
+  enabled: true
+  replicas: 3  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 1200m
+      memory: 1000Mi
