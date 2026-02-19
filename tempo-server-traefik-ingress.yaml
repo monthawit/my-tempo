@@ -1,0 +1,77 @@
+## #### สร้างไฟล์ htpasswd ชั่วคราว (Username: admin, Password: yourpassword)
+# htpasswd -nb admin yourpassword > auth-file
+# htpasswd -nb admin yourpassword > auth
+#
+# #### สร้าง Kubernetes Secret จากไฟล์นั้น
+# kubectl create secret generic tempo-basic-auth \
+#  --from-file=auth=auth-file \
+#  -n tempo
+#
+# ลบไฟล์ชั่วคราว
+# rm auth-file
+#####################################
+
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: tempo-tempo-basicauth # เปลี่ยนชื่อที่นี่
+  namespace: tempo
+spec:
+  basicAuth:
+    secret: tempo-basic-auth
+---
+#observe2-mimir-gateway.observe.olsdemo.com
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tempo-gateway-ingress
+  namespace: tempo 
+  annotations:
+    cert-manager.io/cluster-issuer: traces01
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.options: default
+    traefik.ingress.kubernetes.io/service.serversscheme: http
+    traefik.ingress.kubernetes.io/router.middlewares: tempo-tempo-basicauth@kubernetescrd
+    #traefik.ingress.kubernetes.io/router.middlewares: tempo-basicauth@kubernetescrd      
+    traefik.ingress.kubernetes.io/service.responsestimeout: "30s"  
+spec:
+  ingressClassName: traces 
+  tls:
+  - hosts:
+    - tempo-gateway.traces.olsxops.com
+##### if you use certmanager do not remove #
+    secretName: traces-gateway-tls
+  rules:
+  - host: tempo-gateway.traces.olsxops.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            #name: mimir-prod-nginx
+            name: tempo-gateway
+            port:
+              number: 80
+      - path: /v1/traces
+        pathType: Prefix  #Exact # หรือ Prefix
+        backend:
+          service:
+            name: tempo-gateway
+            port:
+              number: 80     
+      - path: /otlp
+        pathType: Prefix  #Exact # หรือ Prefix
+        backend:
+          service:
+            name: tempo-gateway
+            port:
+              number: 80                 
+      - path: /otlp/v1/traces
+        pathType: Prefix  #Exact # หรือ Prefix
+        backend:
+          service:
+            name: tempo-gateway
+            port:
+              number: 80
