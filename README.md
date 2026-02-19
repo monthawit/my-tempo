@@ -1,7 +1,7 @@
 # my-tempo
 Grafana Tempo
 
-## Create user pass base64
+## Create Basic Authen user pass base64
 
 ```bash
 # ตัวอย่าง: สร้างจาก username 'admin' และ password 'password123'
@@ -15,7 +15,7 @@ echo -n "admin:password123" | base64
       # แทนที่ด้วยค่า Base64 ที่ได้จากขั้นตอนข้างบน
       Authorization: "Basic YWRtaW46cGFzc3dvcmQxMjM="
 ```
-## Create Secret  Username password base64 
+## Create Basic Authen Secret  Username password base64 
 ```bash
 echo -n "admin:pass" | base64
 
