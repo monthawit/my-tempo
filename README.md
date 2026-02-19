@@ -4,6 +4,8 @@ Grafana Tempo
 # Install Grafana Tempo 
 
 ```bash
+kubectl create ns tempo
+
 helm repo add grafana-community https://grafana-community.github.io/helm-charts
 
 helm repo update
@@ -16,6 +18,10 @@ grafana-community/tempo-distributed     2.1.2           2.10.0          Grafana 
 
 
 helm upgrade --install tempo grafana-community/tempo-distributed -f values-file.yaml --version 2.1.2 -n tempo
+
+## checkf pod,pvc,svc
+
+kubectl get pod,pvc,svc -n tempo
 ```
 
 ## Create Basic Authen user pass base64
