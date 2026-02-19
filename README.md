@@ -1,6 +1,21 @@
 # my-tempo
 Grafana Tempo
 
+## Create user pass base64
+
+```bash
+# ตัวอย่าง: สร้างจาก username 'admin' และ password 'password123'
+echo -n "admin:password123" | base64
+# สมมติได้ค่า: YWRtaW46cGFzc3dvcmQxMjM=
+
+นำไปใช้ใน Headers สำหรับ Tenant และ Auth
+    headers:
+      # แทนที่ด้วย Tenant ID ที่คุณตั้งไว้ใน Tempo
+      X-Scope-OrgID: "my-tenant-id"
+      # แทนที่ด้วยค่า Base64 ที่ได้จากขั้นตอนข้างบน
+      Authorization: "Basic YWRtaW46cGFzc3dvcmQxMjM="
+```
+
 ## Install Opentelemetry Operator 
 
 ```bash
