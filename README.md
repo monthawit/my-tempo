@@ -1,6 +1,23 @@
 # my-tempo
 Grafana Tempo
 
+# Install Grafana Tempo 
+
+```bash
+helm repo add grafana-community https://grafana-community.github.io/helm-charts
+
+helm repo update
+
+helm search repo grafana-community/tempo-distributed
+
+root@ols-observe-master-01:/home/ubuntu/tempo# helm search repo grafana-community/tempo-distributed
+NAME                                    CHART VERSION   APP VERSION     DESCRIPTION                       
+grafana-community/tempo-distributed     2.1.2           2.10.0          Grafana Tempo in MicroService mode
+
+
+helm upgrade --install tempo grafana-community/tempo-distributed -f values-file.yaml --version 2.1.2 -n tempo
+```
+
 ## Create Basic Authen user pass base64
 
 ```bash
