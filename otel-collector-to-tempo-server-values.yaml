@@ -1,0 +1,30 @@
+mode: deployment
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc: {}
+        http: {}
+
+  processors:
+    batch: {}
+
+  exporters:
+    otlphttp:
+      endpoint: https://tempo-gateway.traces.olsxops.com
+      headers:
+        Authorization: "Basic base64-username:password"
+        X-Scope-OrgID: "otel-demo"
+      tls:
+        insecure_skip_verify: true
+
+  service:
+    pipelines:
+      traces:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: [otlphttp]
