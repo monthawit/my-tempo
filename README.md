@@ -15,6 +15,17 @@ echo -n "admin:password123" | base64
       # แทนที่ด้วยค่า Base64 ที่ได้จากขั้นตอนข้างบน
       Authorization: "Basic YWRtaW46cGFzc3dvcmQxMjM="
 ```
+## Create Secret  Username password base64 
+```bash
+echo -n "admin:pass" | base64
+
+xxxxxxxxxx1234ABC==
+
+kubectl create secret generic tempo-auth \
+--from-literal=auth-header="X-Scope-OrgID=otel-demo,Authorization=Basic xxxxxxxxxx1234ABC==" \
+-n otel-demo --dry-run=client -o yaml | kubectl apply -f -
+
+```
 
 ## Install Opentelemetry Operator 
 
