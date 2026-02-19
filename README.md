@@ -65,7 +65,15 @@ metadata:
   name: python-db-app
   namespace: otel-demo
 spec:
-  .....  
+  template:
+    metadata:
+      labels:
+        app: python-db-app
+      annotations:
+        # ส่วนสำคัญ: บอกให้ OTel Operator ฉีดเครื่องมือเข้าไป
+        instrumentation.opentelemetry.io/inject-python: "true"
+        # กรณีมีหลาย instrumentation  
+        instrumentation.opentelemetry.io/otel-python-instrumentation: "otel-demo/my-instrumentation" 
     spec:
       containers:
       - name: app
