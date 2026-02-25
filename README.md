@@ -118,3 +118,49 @@ spec:
         - name: GF_TRACING_OPENTELEMETRY_OTLP_SERVICE_NAME
           value: "grafana-web"
 ```
+
+## Deployment ENV สำหรับ Go
+
+```yaml
+      containers:
+        - name: server
+          securityContext:
+            allowPrivilegeEscalation: true   ## important
+            capabilities:
+              add:
+                - SYS_PTRACE    ## important
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+          image: us-central1-docker.pkg.dev/google-samples/microservices-demo/frontend:v0.10.4
+          ports:
+          - containerPort: 8080
+          readinessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: "/_healthz"
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-readiness-probe"
+          livenessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: "/_healthz"
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-liveness-probe"
+          env:
+          - name: ENABLE_TRACING   ## important
+            value: "1"
+          - name: OTEL_SERVICE_NAME
+            value: google-shop-frontend
+          - name: COLLECTOR_SERVICE_ADDR   ## important
+            value: "my-opentelemetry-collector.opentelemetry.svc.cluster.local:4317"
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: "http://my-opentelemetry-collector.opentelemetry.svc.cluster.local:4318"
+          - name: OTEL_EXPORTER_OTLP_PROTOCOL
+            value: "http/protobuf"
+```
