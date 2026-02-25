@@ -122,6 +122,19 @@ spec:
 ## Deployment ENV สำหรับ Go
 
 ```yaml
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+      annotations:
+        instrumentation.opentelemetry.io/inject-go: "google-shop/go-instrumentation"
+        instrumentation.opentelemetry.io/otel-go-auto-target-exe: "/app/frontend"
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+######
       containers:
         - name: server
           securityContext:
